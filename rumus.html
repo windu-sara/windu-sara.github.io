@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artikel Matematika: Teorema Dasar</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" 
+        onload="renderMathInElement(document.body, {
+            delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false}
+            ]
+        });"></script>
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #ffffff;
+            color: #24292f;
+            padding: 40px;
+            line-height: 1.8;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background-color: #f6f8fa;
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            color: #24292f;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+        }
+
+        /* Header Card - 1.5x lebih besar dari title card */
+        .header-card {
+            border: 1px solid #d0d7de;
+            border-radius: 8px;
+            padding: 24px;
+            position: relative;
+            background-color: #fff;
+            margin-bottom: 30px;
+            border-left: 6px solid #3182ce;
+        }
+
+        .header-card h1 {
+            margin: 0;
+            font-size: 1.8rem; /* 1.2rem * 1.5 */
+            font-weight: 700;
+        }
+
+        /* Artikel Style */
+        .article-body {
+            font-size: 1.1rem;
+            color: #1a202c;
+        }
+
+        .math-block {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <a href="index.html" class="back-button">← Kembali</a>
+
+        <div class="header-card">
+            <h1>Memahami Persamaan Kuadrat</h1>
+        </div>
+
+        <article class="article-body">
+            <p>
+                Persamaan kuadrat adalah polinomial orde dua dengan bentuk umum yang sangat kita kenal. 
+                Dalam matematika, bentuk ini dituliskan sebagai $ax^2 + bx + c = 0$, di mana $a, b,$ dan $c$ adalah konstanta.
+            </p>
+
+            <h3>1. Rumus Kuadratik (Rumus ABC)</h3>
+            <p>
+                Untuk mencari akar-akar dari persamaan tersebut, kita bisa menggunakan rumus kuadratik yang sangat populer:
+            </p>
+            
+            <div class="math-block">
+                $$x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$$
+            </div>
+
+            <p>
+                Nilai di dalam akar, yaitu $b^2 - 4ac$, disebut sebagai <strong>diskriminan</strong> ($D$). 
+                Diskriminan ini menentukan sifat dari akar-akar persamaan tersebut:
+            </p>
+            <ul>
+                <li>Jika $D > 0$, maka terdapat dua akar real yang berbeda.</li>
+                <li>Jika $D = 0$, maka terdapat satu akar real (akar kembar).</li>
+                <li>Jika $D < 0$, maka akar-akarnya adalah bilangan kompleks.</li>
+            </ul>
+
+            <h3>2. Contoh Turunan Fungsi</h3>
+            <p>
+                Selain aljabar, KaTeX juga sangat hebat untuk menuliskan notasi kalkulus yang kompleks seperti limit berikut ini:
+                $$ f'(x) = \lim_{h \to 0} \frac{f(x+h) - f(x)}{h} $$
+            </p>
+        </article>
+
+        <div style="margin-top: 50px; border-top: 1px solid #eee; padding-top: 20px;">
+            <a href="index.html" class="back-button">← Kembali ke Beranda</a>
+        </div>
+    </div>
+
+</body>
+</html>
