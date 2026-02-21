@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Kuliah Fisika-Windu Sara</title>
+    <style>
+        /* Gaya dasar untuk mempercantik halaman */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+        header {
+            background: #2c3e50;
+            color: #ffffff;
+            padding: 2.5rem 0;
+            text-align: center;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        header p {
+            margin: 10px 0 0;
+            font-size: 1.2rem;
+            color: #bdc3c7;
+        }
+        .container {
+            width: 85%;
+            max-width: 900px;
+            margin: auto;
+            overflow: hidden;
+            padding: 30px 0;
+        }
+        section {
+            background: #ffffff;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        h2 {
+            color: #2c3e50; /*#2980b9;*/
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        ul jd {
+            background: #fdfdfd;
+            margin: 10px 0;
+            padding-top: 0;
+            padding-bottom: 5px;
+            padding-left: 15px;
+            padding-right: 15px;
+            border: 1px solid #ecf0f1;
+            border-left: 4px solid #3498db;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        ul li {
+            background: #fdfdfd;
+            margin: 10px 0;
+            padding: 15px;
+            border: 1px solid #ecf0f1;
+            border-left: 4px solid #3498db;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        ul li a {
+            text-decoration: none;
+            color: #2c3e50;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        ul li a:hover {
+            color: #e74c3c;
+        }
+        .deskripsi {
+            margin: 5px 0 0;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+        .status {
+            background: #e74c3c;
+            color: #fff;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .status.hijau {
+            background: #27ae60;
+        }
+        .status.kuning {
+            background: #f39c12;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: #2c3e50;
+            color: #ecf0f1;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Portal Kuliah Fisika</h1>
+        <p>I Wayan Windu Sara | Universitas Jember (UNEJ)</p>
+    </header>
+
+    <div class="container">
+        
+        <section id="materi">
+            <h2>📚 Matakuliah</h2>
+            <p>Memuat daftar nama matakuliah beserta materi, tugas, soal kuis, dan soal ujian sebelumnya.</p>
+            <ul>
+                <li>
+                    <div>
+                        <a href="daftar-mk/mk-1.html" target="_self">MAF1510: Fisika Statistik</a>
+                        <p class="deskripsi">Prodi S1 Fisika - Semester 4</p>
+                    </div>
+                </li>
+                <li>
+                    <div>
+                        <a href="materi/pertemuan1.pdf" target="_self">KODE MK: Nama MK</a>
+                        <p class="deskripsi">Membahas tentang.</p>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+
+        <section id="ujian">
+            <h2>🗓️ Jadwal Kuis & Ujian</h2>
+            <p>Memuat informasi jadwal kuis maupun ujian dalam satu semester.</p>
+            <ul>
+                <jd>
+                    <div>
+                        <p><strong>Ujian Tengah Semester (UTS)</strong></p>
+                        <p class="deskripsi">Jadwal: 15 April 2026, 08:00 - 10:00 WIB</p>
+                    </div>
+                    <span class="status hijau">Terlaksana</span>
+                </jd>
+                <jd>
+                    <div>
+                        <p><strong>Ujian Akhir Semester (UAS)</strong></p>
+                        <p class="deskripsi">Jadwal: 15 Juni 2026, 08:00 - 10:00 WIB</p>
+                    </div>
+                    <span class="status">Belum Terlaksana</span>
+                </jd>
+            </ul>
+        </section>
+
+        <section id="penelitian">
+            <h2>👨‍🔬 Publikasi Penelitian & Pengabdian</h2>
+            <p>Memuat hasil penelitian dan pengabdian yang telah terpublikasi.</p>
+            <ul>
+                <li>
+                    <div>
+                        <a href="https://scholar.google.com/citations?user=pQJpGJoAAAAJ&hl=id" target="_self">Google Scholar</a>
+                    </div>
+                </li>
+
+                <li>
+                    <div>
+                        <a href="https://sinta.kemdiktisaintek.go.id/authors/profile/6903509" target="_self">Sinta</a>
+                    </div>
+                </li>
+            </ul>
+        </section>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Windu Sara. Portal Kuliah Fisika.</p>
+    </footer>
+
+</body>
+</html>
