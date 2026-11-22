@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulasi Aktivitas Optik - Superposisi Polarisasi</title>
+    <!-- Tailwind CSS untuk tata letak dan tampilan responsif -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- PERBAIKAN 1: Konfigurasi & Library MathJax v3 untuk merender LaTeX ($...$) -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .font-mono-code {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Kustomisasi slider agar rapi dan nyaman disentuh */
+        input[type=range] {
+            -webkit-appearance: none;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: #2563eb;
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            transition: transform 0.1s ease;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: #cbd5e1;
+            border-radius: 999px;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 px-4 py-4 sm:px-8 shadow-sm">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+                <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                    Simulasi Aktivitas Optik (<span class="italic font-serif">Optical Activity</span>)
+                </h1>
+                <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
+                    Superposisi Gelombang Terpolarisasi Melingkar Kanan ($\mathbf{E}_\mathscr{R}$) &amp; Kiri ($\mathbf{E}_\mathscr{L}$) pada Posisi $z'$
+                </p>
+            </div>
+            <!-- PERBAIKAN 2: Penyeragaman rumus dengan LaTeX -->
+            <div class="inline-flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-700">
+                <span>$\mathbf{E} = \mathbf{E}_\mathscr{R} + \mathbf{E}_\mathscr{L}$</span>
+                <span class="text-slate-400">|</span>
+                <span>$\theta = \frac{1}{2}(k_\mathscr{R} - k_\mathscr{L})z'$</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Kolom Kiri: Kanvas Visualisasi 2D -->
+        <div class="lg:col-span-7 flex flex-col gap-4">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex flex-col">
+                <!-- Legenda Vektor -->
+                <div class="flex flex-wrap items-center justify-between gap-2 pb-3 mb-3 border-b border-slate-100 text-xs sm:text-sm">
+                    <div class="flex flex-wrap items-center gap-4">
+                        <span class="inline-flex items-center gap-1.5 font-medium text-blue-700">
+                            <span class="w-3 h-3 rounded-full bg-blue-600 inline-block"></span>
+                            $\mathbf{E}_\mathscr{R}$ (Melingkar Kanan)
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 font-medium text-rose-700">
+                            <span class="w-3 h-3 rounded-full bg-rose-600 inline-block"></span>
+                            $\mathbf{E}_\mathscr{L}$ (Melingkar Kiri)
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 font-bold text-emerald-700">
+                            <span class="w-3.5 h-3.5 rounded-sm bg-emerald-600 inline-block"></span>
+                            $\mathbf{E}$ Resultan
+                        </span>
+                    </div>
+                    <span class="text-xs text-slate-400">Perspektif: Menghadap Arah Datang Cahaya ($-z$)</span>
+                </div>
+
+                <!-- Kontainer Canvas Responsif -->
+                <div id="canvasContainer" class="relative w-full aspect-square max-h-[540px] mx-auto bg-slate-50/50 rounded-xl overflow-hidden border border-slate-100">
+                    <canvas id="phasorCanvas" class="w-full h-full block"></canvas>
+                </div>
+
+                <!-- Tombol Kontrol Waktu & Momen Kunci Figure 8.58 -->
+                <div class="mt-4 pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <button id="btnPlayPause" class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold px-4 py-2.5 rounded-xl shadow-sm transition cursor-pointer text-sm">
+                            <span id="playIcon">⏸</span>
+                            <span id="playText">Jeda Waktu ($t$)</span>
+                        </button>
+                        <button id="btnToggleParallelogram" class="px-3 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-medium text-xs sm:text-sm transition cursor-pointer" title="Tampilkan/Sembunyikan Garis Jajaran Genjang">
+                            Jajaran Genjang: ON
+                        </button>
+                    </div>
+
+                    <!-- Momen Kunci Hecht Fig 8.58 -->
+                    <div class="flex flex-wrap items-center gap-1.5 w-full sm:w-auto justify-end">
+                        <span class="text-xs text-slate-500 mr-1 hidden xl:inline">Momen Fig 8.58:</span>
+                        <button id="btnStateA" class="px-2.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium text-xs transition cursor-pointer border border-slate-200">
+                            (a) $t = 0$
+                        </button>
+                        <button id="btnStateB" class="px-2.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium text-xs transition cursor-pointer border border-slate-200">
+                            (b) Berhimpit Max
+                        </button>
+                        <button id="btnStateC" class="px-2.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium text-xs transition cursor-pointer border border-slate-200">
+                            (c) Berlawanan $180^\circ$
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Penjelasan Fisis Singkat -->
+            <div class="bg-blue-50/70 border border-blue-200/80 rounded-2xl p-4 text-xs sm:text-sm text-slate-700 leading-relaxed">
+                <h3 class="font-semibold text-blue-900 mb-1 flex items-center gap-1.5">
+                    <span>💡</span> Cara Membaca Dinamika Ruang ($z'$) vs. Waktu ($t$):
+                </h3>
+                <ul class="list-disc list-inside space-y-1 text-slate-700">
+                    <li><strong>Posisi Rambat ($z'$):</strong> Menentukan sudut awal bukaan komponen saat $t=0$. $\mathbf{E}_\mathscr{R}$ dibuka ke atas sejauh $+k_\mathscr{R}z'$ dan $\mathbf{E}_\mathscr{L}$ dibuka ke bawah sejauh $-k_\mathscr{L}z'$.</li>
+                    <li><strong>Evolusi Waktu ($t$):</strong> Pada posisi $z'$ yang tetap, seiring waktu berjalan ($\omega t$ bertambah), $\mathbf{E}_\mathscr{R}$ berputar <strong>searah jarum jam (CW)</strong> dan $\mathbf{E}_\mathscr{L}$ berputar <strong>berlawanan jarum jam (CCW)</strong> dengan kelajuan sama.</li>
+                    <li><strong>Hasil Superposisi:</strong> Ujung vektor resultan $\mathbf{E}$ selalu berosilasi bolak-balik di sepanjang <strong>satu garis lurus</strong> (garis putus-putus hijau) yang miring sebesar $\theta = \frac{1}{2}(k_\mathscr{R} - k_\mathscr{L})z'$.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Kolom Kanan: Panel Kontrol & Pembacaan Nilai -->
+        <div class="lg:col-span-5 flex flex-col gap-5">
+            
+            <!-- Kartu Preset Kondisi -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 mb-3">1. Pilih Kondisi Medium</h2>
+                <div class="grid grid-cols-1 gap-2">
+                    <button id="presetKRgtKL" class="preset-btn text-left p-3 rounded-xl border-2 border-blue-600 bg-blue-50/60 transition cursor-pointer">
+                        <div class="font-semibold text-sm text-blue-950">$k_\mathscr{R} > k_\mathscr{L}$ ($n_\mathscr{R} > n_\mathscr{L}$)</div>
+                        <div class="text-xs text-blue-700 mt-0.5">Bidang polarisasi berotasi <strong>Berlawanan Jarum Jam (CCW)</strong>, $\theta > 0$</div>
+                    </button>
+
+                    <button id="presetKLgtKR" class="preset-btn text-left p-3 rounded-xl border border-slate-200 hover:border-slate-300 bg-white transition cursor-pointer">
+                        <div class="font-semibold text-sm text-slate-800">$k_\mathscr{L} > k_\mathscr{R}$ (Seperti Hecht Fig. 8.58)</div>
+                        <div class="text-xs text-slate-500 mt-0.5">Bidang polarisasi berotasi <strong>Searah Jarum Jam (CW)</strong>, $\theta < 0$</div>
+                    </button>
+
+                    <button id="presetEqual" class="preset-btn text-left p-3 rounded-xl border border-slate-200 hover:border-slate-300 bg-white transition cursor-pointer">
+                        <div class="font-semibold text-sm text-slate-800">$k_\mathscr{R} = k_\mathscr{L}$ (Medium Tak Aktif Optik)</div>
+                        <div class="text-xs text-slate-500 mt-0.5">Tidak ada rotasi bidang polarisasi ($\theta = 0^\circ$)</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Kartu Slider Parameter -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-5">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500">2. Parameter Gelombang &amp; Medium</h2>
+
+                <!-- Slider k_R -->
+                <div>
+                    <div class="flex justify-between text-sm mb-1.5">
+                        <label for="sliderKR" class="font-medium text-blue-700">Bilangan Gelombang Kanan ($k_\mathscr{R}$)</label>
+                        <span id="valKR" class="font-mono-code font-semibold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">2.60</span>
+                    </div>
+                    <input type="range" id="sliderKR" min="0.5" max="4.0" step="0.05" value="2.60" class="w-full">
+                </div>
+
+                <!-- Slider k_L -->
+                <div>
+                    <div class="flex justify-between text-sm mb-1.5">
+                        <label for="sliderKL" class="font-medium text-rose-700">Bilangan Gelombang Kiri ($k_\mathscr{L}$)</label>
+                        <span id="valKL" class="font-mono-code font-semibold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">1.40</span>
+                    </div>
+                    <input type="range" id="sliderKL" min="0.5" max="4.0" step="0.05" value="1.40" class="w-full">
+                </div>
+
+                <!-- Slider Posisi z' -->
+                <div>
+                    <div class="flex justify-between text-sm mb-1.5">
+                        <label for="sliderZ" class="font-medium text-slate-800">Jarak Tempuh di Medium ($z'$)</label>
+                        <span id="valZ" class="font-mono-code font-semibold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">0.70 rad</span>
+                    </div>
+                    <input type="range" id="sliderZ" min="0" max="2.5" step="0.02" value="0.70" class="w-full">
+                    <div class="flex justify-between text-[11px] text-slate-400 mt-1">
+                        <span>$z' = 0$ (Masuk Medium)</span>
+                        <span>$z'$ meningkat (Makin dalam)</span>
+                    </div>
+                </div>
+
+                <!-- Slider Fase Waktu omega*t -->
+                <div>
+                    <div class="flex justify-between text-sm mb-1.5">
+                        <label for="sliderWt" class="font-medium text-slate-800">Fase Waktu ($\omega t$)</label>
+                        <span id="valWt" class="font-mono-code font-semibold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">0° (0.00 rad)</span>
+                    </div>
+                    <input type="range" id="sliderWt" min="0" max="6.283185" step="0.01" value="0" class="w-full">
+                </div>
+            </div>
+
+            <!-- Kartu Pembacaan Real-time -->
+            <div class="bg-slate-900 text-slate-100 rounded-2xl shadow-md p-5">
+                <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">3. Pembacaan Sudut &amp; Status Real-Time</h2>
+                
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div class="bg-slate-800/90 p-3 rounded-xl border border-slate-700/70">
+                        <div class="text-xs text-slate-400">Sudut Rotasi Polarisasi ($\theta$)</div>
+                        <div id="readThetaDeg" class="text-xl font-bold font-mono-code text-emerald-400 mt-0.5">+24.1°</div>
+                        <div id="readThetaRad" class="text-xs font-mono-code text-slate-400 mt-0.5">+0.42 rad</div>
+                    </div>
+
+                    <div class="bg-slate-800/90 p-3 rounded-xl border border-slate-700/70">
+                        <div class="text-xs text-slate-400">Arah Rotasi Bidang $\mathbf{E}$</div>
+                        <div id="readDirection" class="text-sm sm:text-base font-bold text-amber-300 mt-1 leading-snug">
+                            Berlawanan Jarum Jam (CCW)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-2 text-xs bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
+                    <div class="flex justify-between items-center">
+                        <span class="text-blue-300">Sudut Sesaat $\mathbf{E}_\mathscr{R}$ ($k_\mathscr{R}z' - \omega t$):</span>
+                        <span id="readAngleR" class="font-mono-code font-semibold text-white">+104.3°</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-rose-300">Sudut Sesaat $\mathbf{E}_\mathscr{L}$ ($-k_\mathscr{L}z' + \omega t$):</span>
+                        <span id="readAngleL" class="font-mono-code font-semibold text-white">−56.1°</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-1.5 border-t border-slate-700">
+                        <span class="text-emerald-300">Amplitudo Sesaat $|\mathbf{E}| / E_0$:</span>
+                        <span id="readAmp" class="font-mono-code font-semibold text-emerald-400">0.17</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        /**
+         * Simulasi Aktivitas Optik (Superposisi E_R dan E_L pada posisi z')
+         * Berdasarkan persamaan Hecht:
+         * E_R = (E0/2) [ i cos(k_R * z' - w*t) + j sin(k_R * z' - w*t) ]
+         * E_L = (E0/2) [ i cos(k_L * z' - w*t) - j sin(k_L * z' - w*t) ]
+         * Resultan E = E_R + E_L berosilasi sepanjang garis miring sudut theta = 0.5 * (k_R - k_L) * z'
+         */
+
+        // Elemen DOM
+        const canvas = document.getElementById('phasorCanvas');
+        const ctx = canvas.getContext('2d');
+        const container = document.getElementById('canvasContainer');
+
+        const sliderKR = document.getElementById('sliderKR');
+        const sliderKL = document.getElementById('sliderKL');
+        const sliderZ = document.getElementById('sliderZ');
+        const sliderWt = document.getElementById('sliderWt');
+
+        const valKR = document.getElementById('valKR');
+        const valKL = document.getElementById('valKL');
+        const valZ = document.getElementById('valZ');
+        const valWt = document.getElementById('valWt');
+
+        const readThetaDeg = document.getElementById('readThetaDeg');
+        const readThetaRad = document.getElementById('readThetaRad');
+        const readDirection = document.getElementById('readDirection');
+        const readAngleR = document.getElementById('readAngleR');
+        const readAngleL = document.getElementById('readAngleL');
+        const readAmp = document.getElementById('readAmp');
+
+        const btnPlayPause = document.getElementById('btnPlayPause');
+        const playIcon = document.getElementById('playIcon');
+        const playText = document.getElementById('playText');
+        const btnToggleParallelogram = document.getElementById('btnToggleParallelogram');
+
+        const btnStateA = document.getElementById('btnStateA');
+        const btnStateB = document.getElementById('btnStateB');
+        const btnStateC = document.getElementById('btnStateC');
+
+        const presetKRgtKL = document.getElementById('presetKRgtKL');
+        const presetKLgtKR = document.getElementById('presetKLgtKR');
+        const presetEqual = document.getElementById('presetEqual');
+
+        // State Simulasi
+        let state = {
+            kR: 2.60,
+            kL: 1.40,
+            z: 0.70,
+            wt: 0,
+            isPlaying: true,
+            showParallelogram: true,
+            lastTimestamp: 0,
+            omegaSpeed: 1.35 // kecepatan sudut animasi (rad/detik)
+        };
+
+        // Fungsi utilitas konversi radian ke derajat
+        function radToDeg(rad) {
+            return (rad * 180) / Math.PI;
+        }
+
+        // Normalisasi sudut ke rentang [-PI, PI] untuk tampilan pembacaan
+        function normalizeAngle(rad) {
+            let a = rad % (2 * Math.PI);
+            if (a > Math.PI) a -= 2 * Math.PI;
+            if (a < -Math.PI) a += 2 * Math.PI;
+            return a;
+        }
+
+        // Atur ukuran kanvas responsif dengan dukungan Retina/HiDPI
+        function resizeCanvas() {
+            const rect = container.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            draw();
+        }
+
+        // Gambar panah vektor tajam
+        function drawArrow(fromX, fromY, toX, toY, color, lineWidth, headLength = 12) {
+            const dx = toX - fromX;
+            const dy = toY - fromY;
+            const length = Math.hypot(dx, dy);
+            if (length < 2) return;
+
+            const angle = Math.atan2(dy, dx);
+            const effectiveHead = Math.min(headLength, length * 0.45);
+
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.fillStyle = color;
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            // Batang panah (berhenti sedikit sebelum ujung agar tajam)
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(
+                toX - (effectiveHead * 0.75) * Math.cos(angle),
+                toY - (effectiveHead * 0.75) * Math.sin(angle)
+            );
+            ctx.stroke();
+
+            // Kepala panah
+            ctx.beginPath();
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(
+                toX - effectiveHead * Math.cos(angle - Math.PI / 7),
+                toY - effectiveHead * Math.sin(angle - Math.PI / 7)
+            );
+            ctx.lineTo(
+                toX - effectiveHead * Math.cos(angle + Math.PI / 7),
+                toY - effectiveHead * Math.sin(angle + Math.PI / 7)
+            );
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        }
+
+        // Gambar busur indikator arah putar melengkung pada lingkaran
+        function drawRotationIndicator(cx, cy, radius, currentAngleCanvas, isClockwiseCanvas, color) {
+            const arcSpan = 0.32; // radian
+            const startA = isClockwiseCanvas ? currentAngleCanvas - 0.12 : currentAngleCanvas + 0.12;
+            const endA = isClockwiseCanvas ? currentAngleCanvas + arcSpan : currentAngleCanvas - arcSpan;
+
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.fillStyle = color;
+            ctx.lineWidth = 2;
+
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, startA, endA, !isClockwiseCanvas);
+            ctx.stroke();
+
+            // Ujung panah kecil pada busur
+            const tipX = cx + radius * Math.cos(endA);
+            const tipY = cy + radius * Math.sin(endA);
+            const tangentAngle = isClockwiseCanvas ? endA + Math.PI / 2 : endA - Math.PI / 2;
+            const headLen = 7;
+
+            ctx.beginPath();
+            ctx.moveTo(tipX, tipY);
+            ctx.lineTo(tipX - headLen * Math.cos(tangentAngle - 0.45), tipY - headLen * Math.sin(tangentAngle - 0.45));
+            ctx.lineTo(tipX - headLen * Math.cos(tangentAngle + 0.45), tipY - headLen * Math.sin(tangentAngle + 0.45));
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        }
+
+        // Fungsi utama menggambar diagram fasor 2D
+        function draw() {
+            const width = container.getBoundingClientRect().width;
+            const height = container.getBoundingClientRect().height;
+            const cx = width / 2;
+            const cy = height / 2;
+
+            // Radius lingkaran komponen (E0 / 2) sehingga amplitudo maksimum E0 = 2 * R
+            const R = Math.min(width, height) * 0.22;
+
+            ctx.clearRect(0, 0, width, height);
+
+            // 1. Grid latar belakang halus
+            ctx.save();
+            ctx.strokeStyle = '#f1f5f9';
+            ctx.lineWidth = 1;
+            const step = R / 2;
+            for (let x = cx % step; x < width; x += step) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
+            }
+            for (let y = cy % step; y < height; y += step) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
+            }
+            ctx.restore();
+
+            // 2. Lingkaran lintasan komponen (radius E0/2) dan lingkaran amplitudo maksimum (radius E0)
+            ctx.save();
+            // Lingkaran luar E0 (putus-putus halus)
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.setLineDash([4, 4]);
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            ctx.arc(cx, cy, 2 * R, 0, 2 * Math.PI);
+            ctx.stroke();
+
+            // Lingkaran komponen E0/2
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.setLineDash([]);
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(cx, cy, R, 0, 2 * Math.PI);
+            ctx.stroke();
+            ctx.restore();
+
+            // 3. Sumbu Koordinat Kartesius (x dan y)
+            ctx.save();
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 1.2;
+            // Sumbu X
+            ctx.beginPath();
+            ctx.moveTo(20, cy);
+            ctx.lineTo(width - 20, cy);
+            ctx.stroke();
+            // Sumbu Y
+            ctx.beginPath();
+            ctx.moveTo(cx, 20);
+            ctx.lineTo(cx, height - 20);
+            ctx.stroke();
+
+            // Label sumbu
+            ctx.fillStyle = '#64748b';
+            ctx.font = '600 13px Inter, sans-serif';
+            ctx.fillText('x (î)', width - 44, cy - 8);
+            ctx.fillText('y (ĵ)', cx + 8, 32);
+            ctx.restore();
+
+            // 4. Perhitungan Fisika Sudut & Vektor
+            const phiR = state.kR * state.z - state.wt;
+            const phiL = -state.kL * state.z + state.wt;
+            const theta = 0.5 * (state.kR - state.kL) * state.z;
+
+            // Koordinat ujung vektor E_R
+            const rx = cx + R * Math.cos(phiR);
+            const ry = cy - R * Math.sin(phiR);
+
+            // Koordinat ujung vektor E_L
+            const lx = cx + R * Math.cos(phiL);
+            const ly = cy - R * Math.sin(phiL);
+
+            // Koordinat ujung vektor resultan E = E_R + E_L
+            const ex = cx + R * (Math.cos(phiR) + Math.cos(phiL));
+            const ey = cy - R * (Math.sin(phiR) + Math.sin(phiL));
+
+            // 5. Garis Bidang Polarisasi Linear (sumbu osilasi E)
+            ctx.save();
+            const lineLen = 2.15 * R;
+            const px1 = cx - lineLen * Math.cos(theta);
+            const py1 = cy + lineLen * Math.sin(theta);
+            const px2 = cx + lineLen * Math.cos(theta);
+            const py2 = cy - lineLen * Math.sin(theta);
+
+            ctx.strokeStyle = 'rgba(16, 185, 129, 0.45)';
+            ctx.setLineDash([7, 5]);
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(px1, py1);
+            ctx.lineTo(px2, py2);
+            ctx.stroke();
+            ctx.restore();
+
+            // 6. Busur Sudut Rotasi Bidang Polarisasi (theta) dari sumbu +x
+            if (Math.abs(theta) > 0.02) {
+                ctx.save();
+                const arcR = R * 0.52;
+                ctx.strokeStyle = '#059669';
+                ctx.fillStyle = 'rgba(16, 185, 129, 0.14)';
+                ctx.lineWidth = 2;
+
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.arc(cx, cy, arcR, 0, -theta, theta > 0);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(cx, cy, arcR, 0, -theta, theta > 0);
+                ctx.stroke();
+
+                // Label theta
+                const midAngle = -theta / 2;
+                const labelDist = arcR + 18;
+                ctx.fillStyle = '#047857';
+                ctx.font = 'bold 13px Inter, sans-serif';
+                ctx.fillText(
+                    `θ = ${radToDeg(theta) >= 0 ? '+' : ''}${radToDeg(theta).toFixed(1)}°`,
+                    cx + labelDist * Math.cos(midAngle) - 10,
+                    cy + labelDist * Math.sin(midAngle) + 4
+                );
+                ctx.restore();
+            }
+
+            // 7. Garis Konstruksi Jajaran Genjang (Opsional)
+            if (state.showParallelogram) {
+                ctx.save();
+                ctx.strokeStyle = 'rgba(100, 116, 139, 0.45)';
+                ctx.setLineDash([4, 4]);
+                ctx.lineWidth = 1.4;
+                ctx.beginPath();
+                ctx.moveTo(rx, ry);
+                ctx.lineTo(ex, ey);
+                ctx.lineTo(lx, ly);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // 8. Indikator Arah Gerak Waktu (t bertambah) pada lingkaran
+            drawRotationIndicator(cx, cy, R + 10, -phiR, true, 'rgba(37, 99, 235, 0.65)');
+            drawRotationIndicator(cx, cy, R + 10, -phiL, false, 'rgba(225, 29, 72, 0.65)');
+
+            // 9. Gambar Vektor-Vektor Utama
+            drawArrow(cx, cy, rx, ry, '#2563eb', 3, 12);
+            drawArrow(cx, cy, lx, ly, '#e11d48', 3, 12);
+            drawArrow(cx, cy, ex, ey, '#059669', 5, 16);
+
+            // Titik pusat (0,0)
+            ctx.save();
+            ctx.fillStyle = '#1e293b';
+            ctx.beginPath();
+            ctx.arc(cx, cy, 4, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.restore();
+
+            // PERBAIKAN 3: Label Vektor di Kanvas menggunakan karakter Unicode script
+            ctx.save();
+            ctx.font = 'bold 14px Inter, sans-serif';
+
+            // Label E_R
+            const labelRX = cx + (R + 24) * Math.cos(phiR) - 10;
+            const labelRY = cy - (R + 24) * Math.sin(phiR) + 5;
+            ctx.fillStyle = '#1d4ed8';
+            ctx.fillText('Eℛ', labelRX, labelRY);
+
+            // Label E_L
+            const labelLX = cx + (R + 24) * Math.cos(phiL) - 10;
+            const labelLY = cy - (R + 24) * Math.sin(phiL) + 5;
+            ctx.fillStyle = '#be123c';
+            ctx.fillText('Eℒ', labelLX, labelLY);
+
+            // Label Resultan E
+            const resMag = Math.hypot(ex - cx, ey - cy);
+            if (resMag > 14) {
+                const resAngle = Math.atan2(cy - ey, ex - cx);
+                const labelEX = ex + 18 * Math.cos(resAngle) - 6;
+                const labelEY = ey - 18 * Math.sin(resAngle) + 5;
+                ctx.fillStyle = '#065f46';
+                ctx.font = 'bold 16px Inter, sans-serif';
+                ctx.fillText('E', labelEX, labelEY);
+            }
+            ctx.restore();
+
+            // Perbarui panel pembacaan angka real-time
+            updateReadings(theta, phiR, phiL, resMag / (2 * R));
+        }
+
+        // Perbarui nilai teks di UI
+        function updateReadings(theta, phiR, phiL, normalizedAmp) {
+            valKR.textContent = state.kR.toFixed(2);
+            valKL.textContent = state.kL.toFixed(2);
+            valZ.textContent = `${state.z.toFixed(2)} rad`;
+
+            const wtDeg = radToDeg(state.wt) % 360;
+            valWt.textContent = `${wtDeg.toFixed(0)}° (${state.wt.toFixed(2)} rad)`;
+
+            const thetaDeg = radToDeg(theta);
+            const signTheta = thetaDeg > 0.05 ? '+' : '';
+            readThetaDeg.textContent = `${signTheta}${thetaDeg.toFixed(1)}°`;
+            readThetaRad.textContent = `${theta > 0.001 ? '+' : ''}${theta.toFixed(3)} rad`;
+
+            if (Math.abs(state.kR - state.kL) < 0.01 || state.z < 0.01) {
+                readDirection.textContent = 'Tidak Berotasi (Tetap di Sumbu-x)';
+                readDirection.className = 'text-sm font-bold text-slate-300 mt-1 leading-snug';
+            } else if (state.kR > state.kL) {
+                readDirection.textContent = 'Berlawanan Jarum Jam (CCW)';
+                readDirection.className = 'text-sm font-bold text-emerald-300 mt-1 leading-snug';
+            } else {
+                readDirection.textContent = 'Searah Jarum Jam (CW)';
+                readDirection.className = 'text-sm font-bold text-amber-300 mt-1 leading-snug';
+            }
+
+            const degR = radToDeg(normalizeAngle(phiR));
+            const degL = radToDeg(normalizeAngle(phiL));
+            readAngleR.textContent = `${degR >= 0 ? '+' : ''}${degR.toFixed(1)}°`;
+            readAngleL.textContent = `${degL >= 0 ? '+' : ''}${degL.toFixed(1)}°`;
+            readAmp.textContent = normalizedAmp.toFixed(2);
+        }
+
+        // Loop animasi waktu (t)
+        function animate(timestamp) {
+            if (!state.lastTimestamp) state.lastTimestamp = timestamp;
+            const dt = (timestamp - state.lastTimestamp) / 1000;
+            state.lastTimestamp = timestamp;
+
+            if (state.isPlaying) {
+                state.wt = (state.wt + state.omegaSpeed * dt) % (2 * Math.PI);
+                sliderWt.value = state.wt;
+                draw();
+            }
+            requestAnimationFrame(animate);
+        }
+
+        // Pengaturan sorotan tombol preset
+        function highlightPreset(activeBtn) {
+            [presetKRgtKL, presetKLgtKR, presetEqual].forEach(btn => {
+                btn.classList.remove('border-2', 'border-blue-600', 'bg-blue-50/60');
+                btn.classList.add('border', 'border-slate-200', 'bg-white');
+            });
+            if (activeBtn) {
+                activeBtn.classList.remove('border', 'border-slate-200', 'bg-white');
+                activeBtn.classList.add('border-2', 'border-blue-600', 'bg-blue-50/60');
+            }
+        }
+
+        // Event Listeners Slider
+        sliderKR.addEventListener('input', (e) => {
+            state.kR = parseFloat(e.target.value);
+            highlightPreset(null);
+            draw();
+        });
+
+        sliderKL.addEventListener('input', (e) => {
+            state.kL = parseFloat(e.target.value);
+            highlightPreset(null);
+            draw();
+        });
+
+        sliderZ.addEventListener('input', (e) => {
+            state.z = parseFloat(e.target.value);
+            draw();
+        });
+
+        sliderWt.addEventListener('input', (e) => {
+            state.wt = parseFloat(e.target.value);
+            draw();
+        });
+
+        // Event Listeners Tombol Play/Pause & Jajaran Genjang
+        btnPlayPause.addEventListener('click', () => {
+            state.isPlaying = !state.isPlaying;
+            if (state.isPlaying) {
+                playIcon.textContent = '⏸';
+                playText.textContent = 'Jeda Waktu ($t$)';
+            } else {
+                playIcon.textContent = '▶';
+                playText.textContent = 'Putar Waktu ($t$)';
+            }
+            // Render ulang MathJax pada tombol saat teksnya berubah
+            if (window.MathJax) MathJax.typesetPromise([btnPlayPause]);
+        });
+
+        btnToggleParallelogram.addEventListener('click', () => {
+            state.showParallelogram = !state.showParallelogram;
+            btnToggleParallelogram.textContent = `Jajaran Genjang: ${state.showParallelogram ? 'ON' : 'OFF'}`;
+            draw();
+        });
+
+        // Tombol Momen Kunci Figure 8.58
+        function setPausedWt(targetWt) {
+            state.isPlaying = false;
+            playIcon.textContent = '▶';
+            playText.textContent = 'Putar Waktu ($t$)';
+            if (window.MathJax) MathJax.typesetPromise([btnPlayPause]);
+            
+            let normWt = targetWt % (2 * Math.PI);
+            if (normWt < 0) normWt += 2 * Math.PI;
+            state.wt = normWt;
+            sliderWt.value = normWt;
+            draw();
+        }
+
+        // (a) t = 0
+        btnStateA.addEventListener('click', () => {
+            setPausedWt(0);
+        });
+
+        // (b) Berhimpit Maksimum: phi_R = phi_L => k_R*z - wt = -k_L*z + wt => wt = 0.5*(k_R + k_L)*z
+        btnStateB.addEventListener('click', () => {
+            const wtMeet = 0.5 * (state.kR + state.kL) * state.z;
+            setPausedWt(wtMeet);
+        });
+
+        // (c) Berhimpit Berlawanan 180 deg: wt = 0.5*(k_R + k_L)*z + PI
+        btnStateC.addEventListener('click', () => {
+            const wtOpp = 0.5 * (state.kR + state.kL) * state.z + Math.PI;
+            setPausedWt(wtOpp);
+        });
+
+        // Preset Kondisi
+        presetKRgtKL.addEventListener('click', () => {
+            state.kR = 2.60;
+            state.kL = 1.40;
+            state.z = 0.75;
+            sliderKR.value = state.kR;
+            sliderKL.value = state.kL;
+            sliderZ.value = state.z;
+            highlightPreset(presetKRgtKL);
+            draw();
+        });
+
+        presetKLgtKR.addEventListener('click', () => {
+            state.kR = 1.10;
+            state.kL = 2.80;
+            state.z = 0.75;
+            sliderKR.value = state.kR;
+            sliderKL.value = state.kL;
+            sliderZ.value = state.z;
+            highlightPreset(presetKLgtKR);
+            draw();
+        });
+
+        presetEqual.addEventListener('click', () => {
+            state.kR = 2.00;
+            state.kL = 2.00;
+            state.z = 0.75;
+            sliderKR.value = state.kR;
+            sliderKL.value = state.kL;
+            sliderZ.value = state.z;
+            highlightPreset(presetEqual);
+            draw();
+        });
+
+        // Inisialisasi saat jendela dimuat & di-resize
+        window.addEventListener('resize', resizeCanvas);
+        window.onload = function() {
+            resizeCanvas();
+            requestAnimationFrame(animate);
+        };
+    </script>
+</body>
+</html>
